@@ -50,3 +50,12 @@ void* kmalloc(unsigned long size){
         current_block = current_block->next;
     }
 }
+
+void kfree(void* ptr){
+    block* free_block = (block*)((unsigned char*) ptr - sizeof(block));
+    free_block->free = 1;
+    if (free_block->next != NULL && free_block->next->free == 1){
+        free_block->size = free_block->size + free_block->next->size + sizeof(block);
+        free_block->next = free_block->next->next;
+    }
+}

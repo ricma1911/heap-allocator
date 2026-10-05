@@ -9,8 +9,8 @@ int main(){
     unsigned char* new_memory = (unsigned char*)kmalloc(11);
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(16);
 
-
-
+    kfree(new_memory_2);
+    kfree(new_memory);
 
     return 0;
 }
