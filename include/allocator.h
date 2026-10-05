@@ -1,6 +1,11 @@
 #define NULL 0
 
-void allocator_init(void* region, unsigned long size);
+typedef enum {
+    ALLOCATOR_OK,
+    ALLOCATOR_INVALID_SIZE
+} allocator_status;
+
+allocator_status allocator_init(void* region, unsigned long size);
 
 void* kmalloc(unsigned long size);
 

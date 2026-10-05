@@ -10,11 +10,15 @@ typedef struct block{
 
 block* first_block;
 
-void allocator_init(void* region, unsigned long size){
+allocator_status allocator_init(void* region, unsigned long size){
+    if (size <= sizeof(block)){
+        return ALLOCATOR_INVALID_SIZE;
+    }
     first_block = region;
     first_block->free = 1;
     first_block->size = size - sizeof(block);
     first_block->next = NULL;
+    return ALLOCATOR_OK;
 }
 
 void* kmalloc(unsigned long size){
