@@ -22,6 +22,8 @@ allocator_status allocator_init(void* region, unsigned long size){
 }
 
 void* kmalloc(unsigned long size){
+    while(size % 8 != 0)
+        size++;
     block* current_block = first_block;
     while(1){
         if (current_block == NULL) {
