@@ -58,4 +58,16 @@ void kfree(void* ptr){
         free_block->size = free_block->size + free_block->next->size + sizeof(block);
         free_block->next = free_block->next->next;
     }
+
+    if (free_block != first_block) { //if it is a first block there is no previous
+        block* current_block = first_block;
+        while (current_block->next != free_block)
+            current_block = current_block->next;
+        if (current_block->free == 0){
+            current_block->size = current_block->size + free_block->size + sizeof(block);
+            current_block->next = current_block->next->next;
+        }
+
+    }
+    
 }
