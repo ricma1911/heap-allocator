@@ -13,6 +13,7 @@ int main(){
     kfree(new_memory_1);
     kfree(new_memory_3);
     kfree(new_memory_2);
+    kfree(new_memory_3); // it will be ignored by this implementation
 
     return 0;
 }
