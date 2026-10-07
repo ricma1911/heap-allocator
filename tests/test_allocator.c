@@ -15,5 +15,8 @@ int main(){
     kfree(new_memory_2);
     kfree(new_memory_3); // it will be ignored by this implementation
 
+    int a = 5;
+    kfree(&a);
+
     return 0;
 }

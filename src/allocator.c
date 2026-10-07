@@ -9,6 +9,9 @@ typedef struct block{
 }block;
 
 block* first_block;
+unsigned char* heap_start;
+unsigned char* heap_end;
+
 
 allocator_status allocator_init(void* region, unsigned long size){
     if (size <= sizeof(block)){
@@ -18,6 +21,10 @@ allocator_status allocator_init(void* region, unsigned long size){
     first_block->free = 1;
     first_block->size = size - sizeof(block);
     first_block->next = NULL;
+
+    heap_start = region;
+    heap_end = heap_start + size;
+
     return ALLOCATOR_OK;
 }
 
@@ -52,6 +59,11 @@ void* kmalloc(unsigned long size){
 }
 
 void kfree(void* ptr){
+    unsigned char* p = ptr;
+    if (p < heap_start || p >= heap_end) { //memory is not in allocator's ownership
+        return;
+    }
+
     block* free_block = (block*)((unsigned char*) ptr - sizeof(block));
     if (free_block->free != 0 || free_block->size % 8 != 0) //if metadata is not valid we might have double free
         return;
