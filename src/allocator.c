@@ -65,8 +65,22 @@ void kfree(void* ptr){
     }
 
     block* free_block = (block*)((unsigned char*) ptr - sizeof(block));
-    if (free_block->free != 0 || free_block->size % 8 != 0) //if metadata is not valid we might have double free
+
+    short found = 0;
+    block* current_block = first_block;
+    if (current_block == free_block)
+        found = 1;
+    while (current_block->next != NULL){
+        current_block = current_block->next;
+        if (found == 1 || current_block == free_block){
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found)
         return;
+    
     free_block->free = 1;
     if (free_block->next != NULL && free_block->next->free == 1){
         free_block->size = free_block->size + free_block->next->size + sizeof(block);
