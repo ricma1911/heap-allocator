@@ -1,3 +1,6 @@
+#ifndef ALLOCATOR_H
+#define ALLOCATOR_H
+
 #define NULL 0
 
 typedef enum {
@@ -10,3 +13,5 @@ allocator_status allocator_init(void* region, unsigned long size);
 void* kmalloc(unsigned long size);
 
 void kfree(void* ptr);
+
+#endif
