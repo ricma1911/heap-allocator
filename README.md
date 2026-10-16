@@ -4,6 +4,13 @@
 
 A basic heap allocator that manages a given memory region.
 
+## Memory layout and debugging
+
+### Screenshots for test_coalescing function
+
+This picture ilustrates the block structure.
+![Memory Block Structure](./images/heap_block_structure.png)
+
 ## Features
 
 This memory allocator has three main functions:
