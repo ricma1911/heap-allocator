@@ -8,8 +8,11 @@ A basic heap allocator that manages a given memory region.
 
 ### Screenshots for test_coalescing function
 
-This picture ilustrates the block structure.
+This picture illustrates the block structure.
 ![Memory Block Structure](./images/heap_block_structure.png)
+
+This picture illustrates how coalescing works.
+![Coalescing Result](./images/heap_coalescing_result.png)
 
 ## Features
 
