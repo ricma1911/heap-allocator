@@ -4,9 +4,11 @@
 void test_coalescing();
 void test_zero_size_allocation();
 void test_allocation_failure();
+void test_other_pointer();
 
 int main(){
 
+    test_other_pointer();
     test_allocation_failure();
     test_zero_size_allocation();
     test_coalescing();
@@ -50,3 +52,14 @@ void test_allocation_failure(){
     if (new_memory_1 == NULL)
         return;
 }
+
+//&a is out of memory region and kfree will return immediately
+void test_other_pointer(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+
+    int a = 5;
+    kfree(&a);
+}
+
