@@ -7,9 +7,11 @@ void test_allocation_failure();
 void test_other_pointer();
 void test_not_start_of_user_space();
 void test_double_free();
+void test_kmalloc();
 
 int main(){
 
+    test_kmalloc();
     test_double_free();
     test_not_start_of_user_space();
     test_other_pointer();
@@ -89,3 +91,22 @@ void test_double_free(){
     kfree(new_memory_1); // a valid pointer
 }
 
+
+void test_kmalloc(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(11);
+    unsigned char* new_memory_2 = (unsigned char*)kmalloc(12);
+    unsigned char* new_memory_3 = (unsigned char*)kmalloc(1024 - 80 - 24);
+
+    kfree(new_memory_2);
+
+    unsigned char* new_memory_4 = (unsigned char*)kmalloc(7);
+
+    kfree(new_memory_1);
+    kfree(new_memory_3);
+    kfree(new_memory_4);
+
+}

@@ -37,6 +37,11 @@ void* kmalloc(unsigned long size){
             return NULL;
         }
         if (current_block->free == 1 && size <= current_block->size){
+
+            if (current_block->size - size < sizeof(block)){
+                current_block->free = 0;
+                return (unsigned char*) current_block + sizeof(block);
+            }
             unsigned long current_size = current_block->size;
             unsigned long current_free = current_block->free;
             block* current_next = current_block->next;
