@@ -80,6 +80,10 @@ void kfree(void* ptr){
 
     if (!found)
         return;
+
+    if (free_block->free == 1){
+        return;
+    }
     
     free_block->free = 1;
     if (free_block->next != NULL && free_block->next->free == 1){
