@@ -3,9 +3,11 @@
 
 void test_coalescing();
 void test_zero_size_allocation();
+void test_allocation_failure();
 
 int main(){
 
+    test_allocation_failure();
     test_zero_size_allocation();
     test_coalescing();
 
@@ -36,4 +38,15 @@ void test_coalescing(){
     kfree(new_memory_3);
     kfree(new_memory_2);
 
+}
+
+// this kmalloc will return NULL, which indicates allocation failure
+void test_allocation_failure(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+    
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(2048);
+    if (new_memory_1 == NULL)
+        return;
 }
