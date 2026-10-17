@@ -5,9 +5,11 @@ void test_coalescing();
 void test_zero_size_allocation();
 void test_allocation_failure();
 void test_other_pointer();
+void test_not_start_of_user_space();
 
 int main(){
 
+    test_not_start_of_user_space();
     test_other_pointer();
     test_allocation_failure();
     test_zero_size_allocation();
@@ -62,4 +64,16 @@ void test_other_pointer(){
     int a = 5;
     kfree(&a);
 }
+
+//new_memory_1 + 4 is not a valid pointer to user-space memory and kfree of new_memory_1 + 4 will not change allocator's state
+void test_not_start_of_user_space(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(20);
+    kfree(new_memory_1 + 4); //invalid pointer
+    kfree(new_memory_1);
+}
+
 
