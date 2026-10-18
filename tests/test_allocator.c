@@ -92,14 +92,20 @@ void test_double_free(){
 }
 
 
+//another case of kmalloc is when there is not enough space 
+//for metadata for other block and therefore it is impossible to make an ordinary split
+//in that case allocator will give all of the remaining memory
+//to the same block and there will be internal fragmentation
+//this example demonstrates an edge case where exactly 24 bytes remain
+//for the metadata of a new block with 0 bytes of user space
 void test_kmalloc(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(11);
-    unsigned char* new_memory_2 = (unsigned char*)kmalloc(12);
-    unsigned char* new_memory_3 = (unsigned char*)kmalloc(1024 - 80 - 24);
+    unsigned char* new_memory_2 = (unsigned char*)kmalloc(32);
+    unsigned char* new_memory_3 = (unsigned char*)kmalloc(1024 - 96 - 24);
 
     kfree(new_memory_2);
 
