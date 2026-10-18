@@ -124,16 +124,29 @@ void* krealloc(void* ptr, unsigned long size){
 
         unsigned long byte_difference = size - current_block->size;
 
-        if (next_block->size >= byte_difference && next_block->free == 1){ //there is enough space
-            current_block->size = size;
-            next_block->size -= byte_difference;
+        if (next_block->free == 1){
+            if (next_block->size >= byte_difference){//there is enough space for second block metadata
+                current_block->size = size;
+                next_block->size -= byte_difference;
 
-            block* new_next_block = (block*)((unsigned char*) next_block + byte_difference);
-            current_block->next = new_next_block;
+                block* new_next_block = (block*)((unsigned char*) next_block + byte_difference);
+                current_block->next = new_next_block;
 
-            new_next_block->next = next_block->next;
-            new_next_block->free = next_block->free;
-            new_next_block->size = next_block->size;
+                new_next_block->next = next_block->next;
+                new_next_block->free = next_block->free;
+                new_next_block->size = next_block->size;
+
+            } else { // not enough space for second block metadata
+
+                if (byte_difference <= next_block->size + sizeof(block)){ // there is enough space
+
+                } else { // not enough space
+
+                }
+                
+            }
+        } else {
+
         }
 
         return (unsigned char*) current_block + sizeof(block);
