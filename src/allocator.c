@@ -144,6 +144,25 @@ void* krealloc(void* ptr, unsigned long size){
 
                 } else { // not enough space
 
+                    unsigned char* new_data = (unsigned char*)kmalloc(size);
+                    if (new_data == NULL) { //kmalloc failed
+                        return NULL; //means krealloc failed
+                    }
+
+                    block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
+
+                    //copy of old data
+                    unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
+
+                    for (int i = 0; i < current_block->size;i++){
+                        *new_data = *old_data;
+                        old_data += 1;
+                        new_data += 1;
+                    }
+
+                    //free of the old block
+                    kfree((unsigned char*) current_block + sizeof(block));
+                    return (unsigned char*)new_created_block + sizeof(block);
                 }
                 
             }
