@@ -139,6 +139,8 @@ void* krealloc(void* ptr, unsigned long size){
             } else { // not enough space for second block metadata
 
                 if (byte_difference <= next_block->size + sizeof(block)){ // there is enough space
+                    current_block->size += next_block->size + sizeof(block);
+                    current_block->next = next_block->next;
 
                 } else { // not enough space
 

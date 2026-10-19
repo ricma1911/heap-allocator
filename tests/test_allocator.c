@@ -132,4 +132,8 @@ void test_basic_realloc(){
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 7);
     kfree(new_memory_1);
 
+    new_memory_1 = (unsigned char*)kmalloc(11);
+    new_memory_1 = (unsigned char*)krealloc(new_memory_1, 977);
+
+
 }
