@@ -170,5 +170,16 @@ void test_krealloc_expansion_next_block_not_free(){
     kfree(new_memory_1);
 
     new_memory_2 = krealloc(new_memory_2, 16);
+
+    kfree(new_memory_2);
+    kfree(new_memory_3);
+
+    new_memory_1 = (unsigned char*)kmalloc(8);
+    new_memory_2 = (unsigned char*)kmalloc(8);
+    new_memory_3 = (unsigned char*)kmalloc(936);
+
+    kfree(new_memory_1);
+
+    new_memory_2 = krealloc(new_memory_2, 19);
 }
 

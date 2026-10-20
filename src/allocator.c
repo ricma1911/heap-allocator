@@ -208,6 +208,25 @@ void* krealloc(void* ptr, unsigned long size){
 
                         return (unsigned char*) new_block + sizeof(block);
                     }
+
+                    if (byte_difference <= previous_block->size + sizeof(block)) { // not enough space for previous block metadata, but enough space for reallocation
+                        previous_block->size = current_block->size + previous_block->size + sizeof(block);
+                        previous_block->free = current_block->free;
+                        previous_block->next = current_block->next;
+
+                        unsigned char* new_data = (unsigned char*) previous_block + sizeof(block);
+                        unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
+                        
+                        for (int i = 0; i < current_block->size;i++){
+                            *new_data = *old_data;
+                            old_data += 1;
+                            new_data += 1;
+                        }
+
+                        return (unsigned char*)previous_block + sizeof(block);
+                    }
+
+                    return NULL; //not enough space
                 }
 
                 block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
