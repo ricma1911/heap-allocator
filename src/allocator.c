@@ -166,7 +166,64 @@ void* krealloc(void* ptr, unsigned long size){
                 }
                 
             }
-        } else {
+        } else { //next block is not free
+
+                unsigned char* new_data = (unsigned char*)kmalloc(size);
+                if (new_data == NULL) { //kmalloc failed, in this case we will try with the previous block
+                    if (first_block == current_block) { //no previous
+                        return NULL; //fail
+                    }
+                    
+                    block* previous_block = first_block;
+                    while (previous_block->next != current_block){
+                        previous_block = previous_block->next;
+                    }
+
+                    if (previous_block->free == 0){ // not free
+                        return NULL; //fail
+                    }
+
+                    //implementation for previous block
+                    if (byte_difference <= previous_block->size){ // there is enough space for previous block metadata
+                        previous_block->size -= byte_difference;
+                        block* new_block = current_block;
+
+                        unsigned long old_size = current_block->size;
+
+                        new_block = (block*) ((unsigned char*) current_block - byte_difference);
+                        new_block->size = size;
+                        new_block->free = current_block->free;
+                        new_block->next = current_block->next;
+
+                        previous_block->next = new_block;
+
+                        unsigned char* new_data = (unsigned char*) new_block + sizeof(block);
+                        unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
+                        
+                        for (int i = 0; i < old_size;i++){
+                            *new_data = *old_data;
+                            old_data += 1;
+                            new_data += 1;
+                        }
+
+                        return (unsigned char*) new_block + sizeof(block);
+                    }
+                }
+
+                block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
+
+                //copy of old data
+                unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
+
+                for (int i = 0; i < current_block->size;i++){
+                    *new_data = *old_data;
+                    old_data += 1;
+                    new_data += 1;
+                }
+
+                //free of the old block
+                kfree((unsigned char*) current_block + sizeof(block));
+                return (unsigned char*)new_created_block + sizeof(block);
 
         }
 
