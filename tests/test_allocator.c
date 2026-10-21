@@ -11,10 +11,12 @@ void test_kmalloc();
 void test_basic_krealloc();
 void test_krealloc_expansion_not_enough_space();
 void test_krealloc_expansion_next_block_not_free();
+void test_krealloc_shrinking_next_block_not_free();
 
 
 int main(){
 
+    test_krealloc_shrinking_next_block_not_free();
     test_krealloc_expansion_next_block_not_free();
     test_krealloc_expansion_not_enough_space();
     test_basic_krealloc();
@@ -181,5 +183,25 @@ void test_krealloc_expansion_next_block_not_free(){
     kfree(new_memory_1);
 
     new_memory_2 = krealloc(new_memory_2, 19);
+}
+
+void test_krealloc_shrinking_next_block_not_free(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(16);
+    unsigned char* new_memory_2 = (unsigned char*)kmalloc(13);
+    new_memory_1 = krealloc(new_memory_1, 7);
+
+    kfree(new_memory_1);
+    kfree(new_memory_2);
+
+    new_memory_1 = (unsigned char*)kmalloc(30);
+    new_memory_2 = (unsigned char*)kmalloc(13);
+    new_memory_1 = krealloc(new_memory_1, 7);
+
+    kfree(new_memory_1);
+    kfree(new_memory_2);
 }
 
