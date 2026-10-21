@@ -1,6 +1,7 @@
 #include "allocator.h"
 
 
+void test_krealloc_zero();
 void test_coalescing();
 void test_zero_size_allocation();
 void test_allocation_failure();
@@ -16,6 +17,7 @@ void test_krealloc_shrinking_next_block_not_free();
 
 int main(){
 
+    test_krealloc_zero();
     test_krealloc_shrinking_next_block_not_free();
     test_krealloc_expansion_next_block_not_free();
     test_krealloc_expansion_not_enough_space();
@@ -205,3 +207,13 @@ void test_krealloc_shrinking_next_block_not_free(){
     kfree(new_memory_2);
 }
 
+void test_krealloc_zero(){
+
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(8);
+    new_memory_1 = krealloc(new_memory_1, 0);
+    
+}

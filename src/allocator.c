@@ -110,10 +110,15 @@ void kfree(void* ptr){
 }
 
 void* krealloc(void* ptr, unsigned long size){
+    if (size == 0){
+        kfree(ptr);
+        return NULL;
+    }
+
     while (size % 8 != 0)
         size++;
     
-    block* current_block = (block*) ((unsigned char*)(ptr - sizeof(block)));
+    block* current_block = (block*) ((unsigned char*) ptr - sizeof(block));
     block* next_block = current_block->next;
 
     if (size == current_block->size){
