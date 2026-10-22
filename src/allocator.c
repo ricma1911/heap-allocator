@@ -8,9 +8,9 @@ typedef struct block{
     struct block* next;
 }block;
 
-block* first_block;
-unsigned char* heap_start;
-unsigned char* heap_end;
+static block* first_block;
+static unsigned char* heap_start;
+static unsigned char* heap_end;
 
 
 allocator_status allocator_init(void* region, unsigned long size){
@@ -159,7 +159,7 @@ void* krealloc(void* ptr, unsigned long size){
                     //copy of old data
                     unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
 
-                    for (int i = 0; i < current_block->size;i++){
+                    for (unsigned long i = 0; i < current_block->size;i++){
                         *new_data = *old_data;
                         old_data += 1;
                         new_data += 1;
@@ -205,7 +205,7 @@ void* krealloc(void* ptr, unsigned long size){
                         unsigned char* new_data = (unsigned char*) new_block + sizeof(block);
                         unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
                         
-                        for (int i = 0; i < old_size;i++){
+                        for (unsigned long i = 0; i < old_size;i++){
                             *new_data = *old_data;
                             old_data += 1;
                             new_data += 1;
@@ -222,7 +222,7 @@ void* krealloc(void* ptr, unsigned long size){
                         unsigned char* new_data = (unsigned char*) previous_block + sizeof(block);
                         unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
                         
-                        for (int i = 0; i < current_block->size;i++){
+                        for (unsigned long i = 0; i < current_block->size;i++){
                             *new_data = *old_data;
                             old_data += 1;
                             new_data += 1;
@@ -239,7 +239,7 @@ void* krealloc(void* ptr, unsigned long size){
                 //copy of old data
                 unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
 
-                for (int i = 0; i < current_block->size;i++){
+                for (unsigned long i = 0; i < current_block->size;i++){
                     *new_data = *old_data;
                     old_data += 1;
                     new_data += 1;

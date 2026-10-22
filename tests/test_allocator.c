@@ -160,6 +160,9 @@ void test_krealloc_expansion_not_enough_space(){
 
     new_memory_1 = krealloc(new_memory_1, 45);
 
+    kfree(new_memory_1);
+    kfree(new_memory_3);
+
 }
 
 void test_krealloc_expansion_next_block_not_free(){
