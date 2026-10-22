@@ -2,7 +2,7 @@
 
 ## Project description
 
-A basic heap allocator that manages a given memory region.
+A basic heap allocator implemented from scratch in C. It manages a memory region provided by caller.
 
 ## Memory layout and debugging
 
@@ -16,11 +16,12 @@ This picture illustrates how coalescing works.
 
 ## Features
 
-This memory allocator has three main functions:
+This memory allocator has four main functions:
 
 - allocator_init - this is used to initialize the region
 - kmalloc - this is used to allocate a portion of memory and returns pointer to that memory, it uses first-fit strategy and 8-byte alignment
 - kfree - this is used to free already allocated memory, it uses basic coalescing free blocks are being merged, there is a basic pointer validation and some safety measures against double free (ignore)
+- krealloc - this is used to reallocate already allocated memory block, it is possible to increase or decrease its size
 
 ## Block structure
 
@@ -44,3 +45,4 @@ After that, run the executable:
 ## Limitations
 
 This allocator manages only given memory region and it is not a kernel memory manager. Kfree has O(n) time complexity due to linear traversal of the block list for validation and locating the previous block.
+It is not thread-safe and it only has 8-byte alignment.
