@@ -9,9 +9,6 @@ typedef struct block{
 }block;
 
 static block* first_block;
-static unsigned char* heap_start;
-static unsigned char* heap_end;
-
 
 allocator_status allocator_init(void* region, unsigned long size){
     if (size <= sizeof(block)){
@@ -21,9 +18,6 @@ allocator_status allocator_init(void* region, unsigned long size){
     first_block->free = 1;
     first_block->size = size - sizeof(block);
     first_block->next = NULL;
-
-    heap_start = region;
-    heap_end = heap_start + size;
 
     return ALLOCATOR_OK;
 }
@@ -64,11 +58,9 @@ void* kmalloc(unsigned long size){
 }
 
 void kfree(void* ptr){
-    unsigned char* p = ptr;
-    if (p < heap_start || p >= heap_end) { //memory is not in allocator's ownership
+    if (ptr == NULL)
         return;
-    }
-
+    
     block* free_block = (block*)((unsigned char*) ptr - sizeof(block));
 
     short found = 0;
@@ -110,6 +102,7 @@ void kfree(void* ptr){
 }
 
 void* krealloc(void* ptr, unsigned long size){
+
     if (size == 0){
         kfree(ptr);
         return NULL;
