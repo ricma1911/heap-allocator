@@ -61,15 +61,13 @@ void kfree(void* ptr){
     if (ptr == NULL)
         return;
     
-    block* free_block = (block*)((unsigned char*) ptr - sizeof(block));
-
     short found = 0;
     block* current_block = first_block;
-    if (current_block == free_block)
+    if ((unsigned char*)current_block + sizeof(block) == ptr)
         found = 1;
     while (current_block->next != NULL){
         current_block = current_block->next;
-        if (found == 1 || current_block == free_block){
+        if (found == 1 || (unsigned char*)current_block + sizeof(block) == ptr){
             found = 1;
             break;
         }
@@ -77,6 +75,8 @@ void kfree(void* ptr){
 
     if (!found)
         return;
+
+    block* free_block = (block*)((unsigned char*) ptr - sizeof(block));
 
     if (free_block->free == 1){
         return;
@@ -102,6 +102,24 @@ void kfree(void* ptr){
 }
 
 void* krealloc(void* ptr, unsigned long size){
+    if (ptr == NULL){
+        return NULL;
+    }
+
+    short found = 0;
+    block* current_block = first_block;
+    if ((unsigned char*)current_block + sizeof(block) == ptr)
+        found = 1;
+    while (current_block->next != NULL){
+        current_block = current_block->next;
+        if (found == 1 || (unsigned char*)current_block + sizeof(block) == ptr){
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found)
+        return NULL;
 
     if (size == 0){
         kfree(ptr);
@@ -111,7 +129,7 @@ void* krealloc(void* ptr, unsigned long size){
     while (size % 8 != 0)
         size++;
     
-    block* current_block = (block*) ((unsigned char*) ptr - sizeof(block));
+    current_block = (block*) ((unsigned char*) ptr - sizeof(block));
     block* next_block = current_block->next;
 
     if (size == current_block->size){
