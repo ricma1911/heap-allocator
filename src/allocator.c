@@ -12,6 +12,9 @@ typedef struct block{
 }block;
 
 static block* first_block;
+#ifdef ALLOCATOR_DEBUG
+static unsigned long region_size;
+#endif
 
 allocator_status allocator_init(void* region, unsigned long size){
     if (size <= sizeof(block)){
@@ -21,6 +24,10 @@ allocator_status allocator_init(void* region, unsigned long size){
     first_block->free = 1;
     first_block->size = size - sizeof(block);
     first_block->next = NULL;
+
+    #ifdef ALLOCATOR_DEBUG
+    region_size = size;
+    #endif
 
     return ALLOCATOR_OK;
 }
@@ -302,7 +309,33 @@ void* krealloc(void* ptr, unsigned long size){
 }
 
 #ifdef ALLOCATOR_DEBUG
-short allocator_validate(){
-    //TO DO
+debug_status allocator_validate(){
+    block* current_block = first_block;
+    unsigned long current_size = 0;
+
+    unsigned long previous_free = 0;
+    short previous_free_ind = 0; //indicator whether previous free has info of a previous block
+
+    while(current_block != NULL){
+        if (current_block->free != 0 || current_block->free != 1){
+            return AL_DEBUG_INVALID_FREE_VALUE;
+        }
+
+        if (previous_free_ind == 1){
+            if (current_block->free == 1 && previous_free == 1){
+                return AL_DEBUG_TWO_FREE_BLOCKS_SEQUENCE;
+            }
+        }
+
+        if (current_block->size % 8 != 0){
+            return AL_DEBUG_INVALID_SIZE;
+        }
+
+        //TO DO - AL_DEBUG_INVALID_TOTAL_SIZE, AL_DEBUG_INVALID_NEXT
+
+        current_block = current_block->next;
+    }
+
+    return AL_DEBUG_OK;
 }
 #endif
