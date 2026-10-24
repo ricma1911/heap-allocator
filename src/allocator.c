@@ -1,5 +1,8 @@
 #include "allocator.h"
 
+#ifdef ALLOCATOR_DEBUG
+#include "allocator_debug.h"
+#endif
 
 //normally this structure takes 24 bytes
 typedef struct block{
@@ -298,3 +301,8 @@ void* krealloc(void* ptr, unsigned long size){
     }
 }
 
+#ifdef ALLOCATOR_DEBUG
+short allocator_validate(){
+    //TO DO
+}
+#endif
