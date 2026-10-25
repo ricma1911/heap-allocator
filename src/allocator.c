@@ -13,7 +13,7 @@ typedef struct block{
 
 static block* first_block;
 #ifdef ALLOCATOR_DEBUG
-static unsigned long region_size;
+static unsigned long region_size = 0;
 #endif
 
 allocator_status allocator_init(void* region, unsigned long size){
@@ -317,7 +317,7 @@ debug_status allocator_validate(){
     short previous_free_ind = 0; //indicator whether previous free has info of a previous block
 
     while(current_block != NULL){
-        if (current_block->free != 0 || current_block->free != 1){
+        if (current_block->free != 0 && current_block->free != 1){
             return AL_DEBUG_INVALID_FREE_VALUE;
         }
 
@@ -331,9 +331,18 @@ debug_status allocator_validate(){
             return AL_DEBUG_INVALID_SIZE;
         }
 
-        //TO DO - AL_DEBUG_INVALID_TOTAL_SIZE, AL_DEBUG_INVALID_NEXT
+        if (current_block->next != NULL && current_block->next != (block*)((unsigned char*) current_block + sizeof(block) + current_block->size)){
+            return AL_DEBUG_INVALID_NEXT;
+        }
 
+        current_size += sizeof(block) + current_block->size;
+        previous_free = current_block->free;
+        previous_free_ind = 1;
         current_block = current_block->next;
+    }
+
+    if (current_size != region_size) {
+        return AL_DEBUG_INVALID_TOTAL_SIZE;
     }
 
     return AL_DEBUG_OK;
