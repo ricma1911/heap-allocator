@@ -1,4 +1,9 @@
 #include "allocator.h"
+#include "allocator_debug.h"
+#include <assert.h>
+
+#define CHECK_HEAP() assert(allocator_validate() == AL_DEBUG_OK)
+
 
 void test_krealloc_zero();
 void test_coalescing();
@@ -40,8 +45,12 @@ void test_zero_size_allocation(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(0);
+    CHECK_HEAP();
+
     kfree(new_memory_1);
+    CHECK_HEAP();
 }
 
 
@@ -49,14 +58,21 @@ void test_coalescing(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(11);
+    CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(7);
+    CHECK_HEAP();
     unsigned char* new_memory_3 = (unsigned char*)kmalloc(16);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_3);
+    CHECK_HEAP();
     kfree(new_memory_2);
+    CHECK_HEAP();
 
 }
 
@@ -65,8 +81,10 @@ void test_allocation_failure(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
     
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(2048);
+    CHECK_HEAP();
     if (new_memory_1 == NULL)
         return;
 }
@@ -76,9 +94,11 @@ void test_other_pointer(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     int a = 5;
     kfree(&a);
+    CHECK_HEAP();
 }
 
 //new_memory_1 + 4 is not a valid pointer to user-space memory and kfree of new_memory_1 + 4 will not change allocator's state
@@ -86,10 +106,15 @@ void test_not_start_of_user_space(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(20);
+    CHECK_HEAP();
+
     kfree(new_memory_1 + 4); //invalid pointer
+    CHECK_HEAP();
     kfree(new_memory_1);
+    CHECK_HEAP();
 }
 
 // a valid pointer with free = 1 will be ignored by kfree
@@ -97,10 +122,15 @@ void test_double_free(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(20);
+    CHECK_HEAP();
+
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_1); // a valid pointer
+    CHECK_HEAP();
 }
 
 
@@ -114,18 +144,27 @@ void test_kmalloc(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(11);
+    CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(32);
+    CHECK_HEAP();
     unsigned char* new_memory_3 = (unsigned char*)kmalloc(1024 - 96 - 24);
+    CHECK_HEAP();
 
     kfree(new_memory_2);
+    CHECK_HEAP();
 
     unsigned char* new_memory_4 = (unsigned char*)kmalloc(7);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_3);
+    CHECK_HEAP();
     kfree(new_memory_4);
+    CHECK_HEAP();
 
 }
 
@@ -133,18 +172,28 @@ void test_basic_krealloc(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(11);
+    CHECK_HEAP();
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 19);
+    CHECK_HEAP();
     kfree(new_memory_1);
+    CHECK_HEAP();
 
     new_memory_1 = (unsigned char*)kmalloc(11);
+    CHECK_HEAP();
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 7);
+    CHECK_HEAP();
     kfree(new_memory_1);
+    CHECK_HEAP();
 
     new_memory_1 = (unsigned char*)kmalloc(11);
+    CHECK_HEAP();
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 977);
+    CHECK_HEAP();
     kfree(new_memory_1);
+    CHECK_HEAP();
 
 }
 
@@ -152,17 +201,25 @@ void test_krealloc_expansion_not_enough_space(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     unsigned char* new_memory_3 = (unsigned char*)kmalloc(16);
+    CHECK_HEAP();
 
     kfree(new_memory_2);
+    CHECK_HEAP();
 
     new_memory_1 = krealloc(new_memory_1, 45);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_3);
+    CHECK_HEAP();
 
 }
 
@@ -170,71 +227,108 @@ void test_krealloc_expansion_next_block_not_free(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     unsigned char* new_memory_3 = (unsigned char*)kmalloc(936);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
 
     new_memory_2 = krealloc(new_memory_2, 16);
+    CHECK_HEAP();
 
     kfree(new_memory_2);
+    CHECK_HEAP();
     kfree(new_memory_3);
+    CHECK_HEAP();
 
     new_memory_1 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     new_memory_2 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     new_memory_3 = (unsigned char*)kmalloc(936);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
 
     new_memory_2 = krealloc(new_memory_2, 19);
+    CHECK_HEAP();
+
 }
 
 void test_krealloc_shrinking_next_block_not_free(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(16);
+    CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(13);
+    CHECK_HEAP();
     new_memory_1 = krealloc(new_memory_1, 7);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_2);
+    CHECK_HEAP();
 
     new_memory_1 = (unsigned char*)kmalloc(30);
+    CHECK_HEAP();
     new_memory_2 = (unsigned char*)kmalloc(13);
+    CHECK_HEAP();
     new_memory_1 = krealloc(new_memory_1, 7);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_2);
+    CHECK_HEAP();
+
 }
 
 void test_krealloc_zero(){
-
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     new_memory_1 = krealloc(new_memory_1, 0);
-    
+    CHECK_HEAP();
+
 }
 
 void test_krealloc_unvalid_pointer(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
+    CHECK_HEAP();
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(8);
-    
+    CHECK_HEAP();
+
     int* a = krealloc(NULL, 12);
+    CHECK_HEAP();
     int b = 5;
     a = krealloc(&b, 10);
+    CHECK_HEAP();
     kfree(a);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
+    CHECK_HEAP();
     kfree(new_memory_2);
+    CHECK_HEAP();
+
 }
