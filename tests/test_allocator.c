@@ -18,10 +18,12 @@ void test_krealloc_expansion_not_enough_space();
 void test_krealloc_expansion_next_block_not_free();
 void test_krealloc_shrinking_next_block_not_free();
 void test_krealloc_unvalid_pointer();
+void test_krealloc_last_block();
 
 
 int main(){
 
+    test_krealloc_last_block();
     test_krealloc_unvalid_pointer();
     test_krealloc_zero();
     test_krealloc_shrinking_next_block_not_free();
@@ -328,6 +330,42 @@ void test_krealloc_unvalid_pointer(){
 
     kfree(new_memory_1);
     CHECK_HEAP();
+    kfree(new_memory_2);
+    CHECK_HEAP();
+
+}
+
+void test_krealloc_last_block(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+    CHECK_HEAP();
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(3);
+    CHECK_HEAP();
+    unsigned char* new_memory_2 = (unsigned char*)kmalloc(1024 - 56);
+    CHECK_HEAP();
+
+    kfree(new_memory_1);
+    CHECK_HEAP();
+
+    new_memory_2 = krealloc(new_memory_2, 1000);
+    CHECK_HEAP();
+
+    kfree(new_memory_2);
+    CHECK_HEAP();
+
+    new_memory_1 = (unsigned char*)kmalloc(3);
+    CHECK_HEAP();
+    new_memory_2 = (unsigned char*)kmalloc(1024 - 56);
+    CHECK_HEAP();
+
+    kfree(new_memory_1);
+    CHECK_HEAP();
+
+    new_memory_2 = krealloc(new_memory_2, 4);
+    CHECK_HEAP();
+
     kfree(new_memory_2);
     CHECK_HEAP();
 

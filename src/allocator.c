@@ -150,7 +150,7 @@ void* krealloc(void* ptr, unsigned long size){
 
         unsigned long byte_difference = size - current_block->size;
 
-        if (next_block->free == 1){
+        if (next_block != NULL && next_block->free == 1){
             if (next_block->size >= byte_difference){//there is enough space for second block metadata
                 current_block->size = size;
                 next_block->size -= byte_difference;
@@ -192,7 +192,7 @@ void* krealloc(void* ptr, unsigned long size){
                 }
                 
             }
-        } else { //next block is not free
+        } else { //next block is not free or does not exist
 
                 unsigned char* new_data = (unsigned char*)kmalloc(size);
                 if (new_data == NULL) { //kmalloc failed, in this case we will try with the previous block
@@ -277,7 +277,7 @@ void* krealloc(void* ptr, unsigned long size){
     } else { // block shrinking
 
         unsigned long byte_difference = current_block->size - size;
-        if (next_block->free == 1) {
+        if (next_block != NULL && next_block->free == 1) {
             current_block->size = size;
             next_block->size += byte_difference;
 
