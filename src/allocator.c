@@ -140,6 +140,9 @@ void* krealloc(void* ptr, unsigned long size){
         size++;
     
     current_block = (block*) ((unsigned char*) ptr - sizeof(block));
+    if (current_block->free == 1){
+        return NULL;
+    }
     block* next_block = current_block->next;
 
     if (size == current_block->size){

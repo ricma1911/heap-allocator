@@ -19,10 +19,13 @@ void test_krealloc_expansion_next_block_not_free();
 void test_krealloc_shrinking_next_block_not_free();
 void test_krealloc_unvalid_pointer();
 void test_krealloc_last_block();
+void test_krealloc_freed_pointer();
+
 
 
 int main(){
 
+    test_krealloc_freed_pointer();
     test_krealloc_last_block();
     test_krealloc_unvalid_pointer();
     test_krealloc_zero();
@@ -369,4 +372,22 @@ void test_krealloc_last_block(){
     kfree(new_memory_2);
     CHECK_HEAP();
 
+}
+
+// krealloc on an already freed pointer must be rejected and must not change the heap
+void test_krealloc_freed_pointer(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+    CHECK_HEAP();
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(100);
+    CHECK_HEAP();
+
+    kfree(new_memory_1);
+    CHECK_HEAP();
+
+    new_memory_1 = (unsigned char*)krealloc(new_memory_1, 50);
+    CHECK_HEAP();
+    assert(new_memory_1 == NULL);
 }
