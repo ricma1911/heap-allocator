@@ -240,10 +240,12 @@ void* krealloc(void* ptr, unsigned long size){
                         previous_block->free = current_block->free;
                         previous_block->next = current_block->next;
 
+                        unsigned long old_size = current_block->size;
+
                         unsigned char* new_data = (unsigned char*) previous_block + sizeof(block);
                         unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
                         
-                        for (unsigned long i = 0; i < current_block->size;i++){
+                        for (unsigned long i = 0; i < old_size;i++){
                             *new_data = *old_data;
                             old_data += 1;
                             new_data += 1;
