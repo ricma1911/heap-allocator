@@ -12,6 +12,8 @@ typedef struct block{
 }block;
 
 static block* first_block;
+static block* copy_data_and_free_old_current_block(unsigned char* new_data, block* current_block);
+
 #ifdef ALLOCATOR_DEBUG
 static unsigned long region_size = 0;
 #endif
@@ -177,20 +179,8 @@ void* krealloc(void* ptr, unsigned long size){
                     if (new_data == NULL) { //kmalloc failed
                         return NULL; //means krealloc failed
                     }
-
-                    block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
-
-                    //copy of old data
-                    unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
-
-                    for (unsigned long i = 0; i < current_block->size;i++){
-                        *new_data = *old_data;
-                        old_data += 1;
-                        new_data += 1;
-                    }
-
-                    //free of the old block
-                    kfree((unsigned char*) current_block + sizeof(block));
+                    
+                    block* new_created_block = copy_data_and_free_old_current_block(new_data, current_block);
                     return (unsigned char*)new_created_block + sizeof(block);
                 }
                 
@@ -260,19 +250,7 @@ void* krealloc(void* ptr, unsigned long size){
                     return NULL; //not enough space
                 }
 
-                block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
-
-                //copy of old data
-                unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
-
-                for (unsigned long i = 0; i < current_block->size;i++){
-                    *new_data = *old_data;
-                    old_data += 1;
-                    new_data += 1;
-                }
-
-                //free of the old block
-                kfree((unsigned char*) current_block + sizeof(block));
+                block* new_created_block = copy_data_and_free_old_current_block(new_data, current_block);
                 return (unsigned char*)new_created_block + sizeof(block);
 
         }
@@ -311,6 +289,24 @@ void* krealloc(void* ptr, unsigned long size){
 
         return (unsigned char*) current_block + sizeof(block);
     }
+}
+
+static block* copy_data_and_free_old_current_block(unsigned char* new_data, block* current_block){
+    block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
+
+    //copy of old data
+    unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
+
+    for (unsigned long i = 0; i < current_block->size;i++){
+        *new_data = *old_data;
+        old_data += 1;
+        new_data += 1;
+    }
+
+    //free of the old block
+    kfree((unsigned char*) current_block + sizeof(block));
+
+    return new_created_block;
 }
 
 #ifdef ALLOCATOR_DEBUG
