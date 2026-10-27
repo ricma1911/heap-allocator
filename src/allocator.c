@@ -13,6 +13,7 @@ typedef struct block{
 
 static block* first_block;
 static block* copy_data_and_free_old_current_block(unsigned char* new_data, block* current_block);
+static void copy_data(block* current_block, block* new_block, unsigned long old_size);
 
 #ifdef ALLOCATOR_DEBUG
 static unsigned long region_size = 0;
@@ -206,7 +207,7 @@ void* krealloc(void* ptr, unsigned long size){
                     if (byte_difference <= previous_block->size){ // there is enough space for previous block metadata
                         previous_block->size -= byte_difference;
                         block* new_block = current_block;
-
+                        
                         unsigned long old_size = current_block->size;
 
                         new_block = (block*) ((unsigned char*) current_block - byte_difference);
@@ -216,14 +217,7 @@ void* krealloc(void* ptr, unsigned long size){
 
                         previous_block->next = new_block;
 
-                        unsigned char* new_data = (unsigned char*) new_block + sizeof(block);
-                        unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
-                        
-                        for (unsigned long i = 0; i < old_size;i++){
-                            *new_data = *old_data;
-                            old_data += 1;
-                            new_data += 1;
-                        }
+                        copy_data(current_block, new_block, old_size);
 
                         return (unsigned char*) new_block + sizeof(block);
                     }
@@ -235,14 +229,7 @@ void* krealloc(void* ptr, unsigned long size){
 
                         unsigned long old_size = current_block->size;
 
-                        unsigned char* new_data = (unsigned char*) previous_block + sizeof(block);
-                        unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
-                        
-                        for (unsigned long i = 0; i < old_size;i++){
-                            *new_data = *old_data;
-                            old_data += 1;
-                            new_data += 1;
-                        }
+                        copy_data(current_block, previous_block, old_size);
 
                         return (unsigned char*)previous_block + sizeof(block);
                     }
@@ -292,6 +279,7 @@ void* krealloc(void* ptr, unsigned long size){
 }
 
 static block* copy_data_and_free_old_current_block(unsigned char* new_data, block* current_block){
+    
     block* new_created_block = (block*)((unsigned char*) new_data - sizeof(block));
 
     //copy of old data
@@ -308,6 +296,18 @@ static block* copy_data_and_free_old_current_block(unsigned char* new_data, bloc
 
     return new_created_block;
 }
+
+static void copy_data(block* current_block, block* new_block, unsigned long old_size){
+    unsigned char* new_data = (unsigned char*) new_block + sizeof(block);
+    unsigned char* old_data = (unsigned char*) current_block + sizeof(block);
+
+    for (unsigned long i = 0; i < old_size;i++){
+        *new_data = *old_data;
+        old_data += 1;
+        new_data += 1;
+    }
+}
+
 
 #ifdef ALLOCATOR_DEBUG
 debug_status allocator_validate(){
