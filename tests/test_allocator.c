@@ -17,7 +17,7 @@ void test_basic_krealloc();
 void test_krealloc_expansion_not_enough_space();
 void test_krealloc_expansion_next_block_not_free();
 void test_krealloc_shrinking_next_block_not_free();
-void test_krealloc_unvalid_pointer();
+void test_krealloc_invalid_pointer();
 void test_krealloc_last_block();
 void test_krealloc_freed_pointer();
 
@@ -27,7 +27,7 @@ int main(){
 
     test_krealloc_freed_pointer();
     test_krealloc_last_block();
-    test_krealloc_unvalid_pointer();
+    test_krealloc_invalid_pointer();
     test_krealloc_zero();
     test_krealloc_shrinking_next_block_not_free();
     test_krealloc_expansion_next_block_not_free();
@@ -312,7 +312,7 @@ void test_krealloc_zero(){
 
 }
 
-void test_krealloc_unvalid_pointer(){
+void test_krealloc_invalid_pointer(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;

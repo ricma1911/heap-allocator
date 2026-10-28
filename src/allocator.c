@@ -14,6 +14,7 @@ typedef struct block{
 static block* first_block;
 static block* copy_data_and_free_old_current_block(unsigned char* new_data, block* current_block);
 static void copy_data(block* current_block, block* new_block, unsigned long old_size);
+static short block_found(void* ptr);
 
 #ifdef ALLOCATOR_DEBUG
 static unsigned long region_size = 0;
@@ -74,17 +75,7 @@ void kfree(void* ptr){
     if (ptr == NULL)
         return;
     
-    short found = 0;
-    block* current_block = first_block;
-    if ((unsigned char*)current_block + sizeof(block) == ptr)
-        found = 1;
-    while (current_block->next != NULL){
-        current_block = current_block->next;
-        if (found == 1 || (unsigned char*)current_block + sizeof(block) == ptr){
-            found = 1;
-            break;
-        }
-    }
+    short found = block_found(ptr);
 
     if (!found)
         return;
@@ -119,17 +110,7 @@ void* krealloc(void* ptr, unsigned long size){
         return NULL;
     }
 
-    short found = 0;
-    block* current_block = first_block;
-    if ((unsigned char*)current_block + sizeof(block) == ptr)
-        found = 1;
-    while (current_block->next != NULL){
-        current_block = current_block->next;
-        if (found == 1 || (unsigned char*)current_block + sizeof(block) == ptr){
-            found = 1;
-            break;
-        }
-    }
+    short found = block_found(ptr);
 
     if (!found)
         return NULL;
@@ -142,7 +123,7 @@ void* krealloc(void* ptr, unsigned long size){
     while (size % 8 != 0)
         size++;
     
-    current_block = (block*) ((unsigned char*) ptr - sizeof(block));
+    block* current_block = (block*) ((unsigned char*) ptr - sizeof(block));
     if (current_block->free == 1){
         return NULL;
     }
@@ -307,6 +288,23 @@ static void copy_data(block* current_block, block* new_block, unsigned long old_
         new_data += 1;
     }
 }
+
+static short block_found(void* ptr){
+    short found = 0;
+    block* current_block = first_block;
+    if ((unsigned char*)current_block + sizeof(block) == ptr)
+        found = 1;
+    while (current_block->next != NULL){
+        current_block = current_block->next;
+        if (found == 1 || (unsigned char*)current_block + sizeof(block) == ptr){
+            found = 1;
+            break;
+        }
+    }
+    return found;
+
+}
+
 
 
 #ifdef ALLOCATOR_DEBUG
