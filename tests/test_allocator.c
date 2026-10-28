@@ -349,11 +349,15 @@ void test_krealloc_last_block(){
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(1024 - 56);
     CHECK_HEAP();
 
+    unsigned char expected[968];
+    copy_memory(expected, new_memory_2, 968);
+
     kfree(new_memory_1);
     CHECK_HEAP();
 
     new_memory_2 = krealloc(new_memory_2, 1000);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_2, expected, 968) == 1);
 
     kfree(new_memory_2);
     CHECK_HEAP();
@@ -363,11 +367,14 @@ void test_krealloc_last_block(){
     new_memory_2 = (unsigned char*)kmalloc(1024 - 56);
     CHECK_HEAP();
 
+    copy_memory(expected, new_memory_2, 968);
+
     kfree(new_memory_1);
     CHECK_HEAP();
 
     new_memory_2 = krealloc(new_memory_2, 4);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_2, expected, 8) == 1);
 
     kfree(new_memory_2);
     CHECK_HEAP();

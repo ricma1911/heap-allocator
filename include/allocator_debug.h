@@ -11,5 +11,8 @@ typedef enum {
 } debug_status;
 
 debug_status allocator_validate();
+//copy from actual to expected
+void copy_memory(void* expected, void* actual, unsigned long size);
+short allocator_data_check(void* ptr, void* data, unsigned long size);
 
 #endif

@@ -346,4 +346,24 @@ debug_status allocator_validate(){
 
     return AL_DEBUG_OK;
 }
+
+short allocator_data_check(void* ptr, void* data, unsigned long size){
+    unsigned char* ptr_c = ptr;
+    unsigned char* data_c = data;
+    for (unsigned long i = 0;i<size;i++){
+        if (ptr_c[i] != data_c[i])
+            return 0;
+    }
+    return 1;
+}
+
+void copy_memory(void* expected, void* actual, unsigned long size){
+    unsigned char* expected_c = expected;
+    unsigned char* actual_c = actual;
+    for (unsigned long i = 0; i < size;i++){
+        *expected_c = *actual_c;
+        expected_c += 1;
+        actual_c += 1;
+    }
+}
 #endif
