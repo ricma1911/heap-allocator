@@ -4,7 +4,6 @@
 
 #define CHECK_HEAP() assert(allocator_validate() == AL_DEBUG_OK)
 
-
 void test_krealloc_zero();
 void test_coalescing();
 void test_zero_size_allocation();
@@ -20,11 +19,13 @@ void test_krealloc_shrinking_next_block_not_free();
 void test_krealloc_invalid_pointer();
 void test_krealloc_last_block();
 void test_krealloc_freed_pointer();
+void test_krealloc_next_block_not_free_kmalloc();
 
 
 
 int main(){
 
+    test_krealloc_next_block_not_free_kmalloc();
     test_krealloc_freed_pointer();
     test_krealloc_last_block();
     test_krealloc_invalid_pointer();
@@ -432,3 +433,37 @@ void test_krealloc_freed_pointer(){
     CHECK_HEAP();
     assert(new_memory_1 == NULL);
 }
+
+void test_krealloc_next_block_not_free_kmalloc(){
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+    CHECK_HEAP();
+
+    unsigned char* new_memory_1 = (unsigned char*)kmalloc(15);
+    CHECK_HEAP();
+    unsigned char* new_memory_2 = (unsigned char*)kmalloc(5);
+    CHECK_HEAP();
+    unsigned char* new_memory_3 = (unsigned char*)kmalloc(6);
+    CHECK_HEAP();
+    unsigned char* new_memory_4 = (unsigned char*)kmalloc(896);
+    CHECK_HEAP();
+
+    kfree(new_memory_1);
+    CHECK_HEAP();
+
+    unsigned char expected[8];
+    copy_memory(expected, new_memory_3, 8);
+
+    new_memory_3 = krealloc(new_memory_3, 16);
+    CHECK_HEAP();
+    assert(allocator_data_check(new_memory_3, expected, 8) == 1);
+
+    kfree(new_memory_2);
+    CHECK_HEAP();
+    kfree(new_memory_3);
+    CHECK_HEAP();
+    kfree(new_memory_4);
+    CHECK_HEAP();
+}
+
