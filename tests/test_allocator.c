@@ -181,22 +181,36 @@ void test_basic_krealloc(){
 
     unsigned char* new_memory_1 = (unsigned char*)kmalloc(11);
     CHECK_HEAP();
+
+    unsigned char expected[16];
+    copy_memory(expected, new_memory_1, 16);
+
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 19);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_1, expected, 16) == 1);
+
     kfree(new_memory_1);
     CHECK_HEAP();
 
     new_memory_1 = (unsigned char*)kmalloc(11);
     CHECK_HEAP();
+    copy_memory(expected, new_memory_1, 16);
+
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 7);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_1, expected, 8) == 1);
+
     kfree(new_memory_1);
     CHECK_HEAP();
 
     new_memory_1 = (unsigned char*)kmalloc(11);
     CHECK_HEAP();
+    copy_memory(expected, new_memory_1, 16);
+
     new_memory_1 = (unsigned char*)krealloc(new_memory_1, 977);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_1, expected, 16) == 1);
+
     kfree(new_memory_1);
     CHECK_HEAP();
 
@@ -218,8 +232,12 @@ void test_krealloc_expansion_not_enough_space(){
     kfree(new_memory_2);
     CHECK_HEAP();
 
+    unsigned char expected[8];
+    copy_memory(expected, new_memory_1, 8);
+
     new_memory_1 = krealloc(new_memory_1, 45);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_1, expected, 8) == 1);
 
     kfree(new_memory_1);
     CHECK_HEAP();
@@ -244,8 +262,12 @@ void test_krealloc_expansion_next_block_not_free(){
     kfree(new_memory_1);
     CHECK_HEAP();
 
+    unsigned char expected[8];
+    copy_memory(expected, new_memory_2, 8);
+
     new_memory_2 = krealloc(new_memory_2, 16);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_2, expected, 8) == 1);
 
     kfree(new_memory_2);
     CHECK_HEAP();
@@ -262,8 +284,11 @@ void test_krealloc_expansion_next_block_not_free(){
     kfree(new_memory_1);
     CHECK_HEAP();
 
+    copy_memory(expected, new_memory_2, 8);
+
     new_memory_2 = krealloc(new_memory_2, 19);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_2, expected, 8) == 1);
 
 }
 
@@ -277,8 +302,13 @@ void test_krealloc_shrinking_next_block_not_free(){
     CHECK_HEAP();
     unsigned char* new_memory_2 = (unsigned char*)kmalloc(13);
     CHECK_HEAP();
+
+    unsigned char expected[32];
+    copy_memory(expected, new_memory_1, 16);
+
     new_memory_1 = krealloc(new_memory_1, 7);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_1, expected, 8) == 1);
 
     kfree(new_memory_1);
     CHECK_HEAP();
@@ -289,8 +319,12 @@ void test_krealloc_shrinking_next_block_not_free(){
     CHECK_HEAP();
     new_memory_2 = (unsigned char*)kmalloc(13);
     CHECK_HEAP();
+
+    copy_memory(expected, new_memory_1, 32);
+
     new_memory_1 = krealloc(new_memory_1, 7);
     CHECK_HEAP();
+    assert(allocator_data_check(new_memory_1, expected, 8) == 1);
 
     kfree(new_memory_1);
     CHECK_HEAP();

@@ -287,6 +287,7 @@ static void copy_data(block* current_block, block* new_block, unsigned long old_
         old_data += 1;
         new_data += 1;
     }
+
 }
 
 static short block_found(void* ptr){
