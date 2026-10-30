@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #define CHECK_HEAP() assert(allocator_validate() == AL_DEBUG_OK)
-#define NUM_OF_OPERATIONS (5000)
+#define NUM_OF_OPERATIONS (200000)
 
 void test_krealloc_zero();
 void test_coalescing();
@@ -486,7 +486,7 @@ void test_stress(){
         unsigned long current_len = 0;
 
         for (int i = 0; i < NUM_OF_OPERATIONS; i++){
-            short operation_index = rand() % 2; 
+            short operation_index = rand() % 3; 
             if (current_len < 32 && operation_index == 0){ //kmalloc
                 unsigned long size = rand() % 50;
                 unsigned char* new_memory = (unsigned char*)kmalloc(size);
@@ -513,7 +513,31 @@ void test_stress(){
                 num_of_successful_operations++;
                 current_len--;
             }
+
+            if (operation_index == 2){ //krealloc
+                if (current_len == 0)
+                    continue;
+
+                unsigned long pointer_index = rand() % current_len;
+                unsigned long size = rand() % 50;
+
+                unsigned char* new_memory = (unsigned char*)krealloc(pointers[pointer_index], size);
+                CHECK_HEAP();
+                if(new_memory == NULL)
+                    continue;
+
+                pointers[pointer_index] = new_memory;
+                num_of_successful_operations++;
+
+
+            }
         }
+
+        while (current_len > 0) {
+            kfree(pointers[--current_len]);
+            CHECK_HEAP();
+        }
+
         printf("Seed %u passed!\n", seed);
         printf("Number of successful operations: %lu\n", num_of_successful_operations);
     }
