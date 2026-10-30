@@ -2,6 +2,7 @@
 #include "allocator_debug.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define CHECK_HEAP() assert(allocator_validate() == AL_DEBUG_OK)
 #define NUM_OF_OPERATIONS (5000)
@@ -472,39 +473,48 @@ void test_krealloc_next_block_not_free_kmalloc(){
 }
 
 void test_stress(){
+    for (unsigned int seed = 0; seed < 5; seed++){
+        unsigned char memory[1024];
+        if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+            return;
+        CHECK_HEAP();
 
-    unsigned char memory[1024];
-    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
-        return;
-    CHECK_HEAP();
+        srand(seed);
 
-    unsigned char* pointers[32];
-    unsigned long current_len = 0;
+        unsigned long num_of_successful_operations = 0;
+        unsigned char* pointers[32];
+        unsigned long current_len = 0;
 
-    for (int i = 0; i < NUM_OF_OPERATIONS; i++){
-        short operation_index = rand() % 2; 
-        if (current_len < 32 && operation_index == 0){ //kmalloc
-            unsigned long size = rand() % 1024;
-            unsigned char* new_memory = (unsigned char*)kmalloc(size);
-            CHECK_HEAP();
-            if (new_memory == NULL){
-                continue;
+        for (int i = 0; i < NUM_OF_OPERATIONS; i++){
+            short operation_index = rand() % 2; 
+            if (current_len < 32 && operation_index == 0){ //kmalloc
+                unsigned long size = rand() % 50;
+                unsigned char* new_memory = (unsigned char*)kmalloc(size);
+                CHECK_HEAP();
+                if (new_memory == NULL){
+                    continue;
+                }
+                //printf("kmalloc size: %lu\n", size);
+                pointers[current_len++] = new_memory;
+                num_of_successful_operations++;
+
             }
+            if (operation_index == 1){ //kfree
+                if (current_len == 0)
+                    continue;
+                unsigned long pointer_index = rand() % current_len;
+                kfree(pointers[pointer_index]);
+                CHECK_HEAP();
 
-            pointers[current_len++] = new_memory;
-
-        }
-        if (operation_index == 1){ //kfree
-            if (current_len == 0)
-                continue;
-            unsigned long pointer_index = rand() % current_len;
-            kfree(pointers[pointer_index]);
-            CHECK_HEAP();
-
-            for (unsigned long j = pointer_index; j < current_len - 1;j++){
-                pointers[j] = pointers[j + 1];
+                for (unsigned long j = pointer_index; j < current_len - 1;j++){
+                    pointers[j] = pointers[j + 1];
+                }
+                //printf("kfree ptr %lu\n", pointer_index);
+                num_of_successful_operations++;
+                current_len--;
             }
-            current_len--;
         }
+        printf("Seed %u passed!\n", seed);
+        printf("Number of successful operations: %lu\n", num_of_successful_operations);
     }
 }
