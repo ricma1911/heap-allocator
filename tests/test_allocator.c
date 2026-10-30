@@ -1,8 +1,10 @@
 #include "allocator.h"
 #include "allocator_debug.h"
 #include <assert.h>
+#include <stdlib.h>
 
 #define CHECK_HEAP() assert(allocator_validate() == AL_DEBUG_OK)
+#define NUM_OF_OPERATIONS (5000)
 
 void test_krealloc_zero();
 void test_coalescing();
@@ -20,11 +22,13 @@ void test_krealloc_invalid_pointer();
 void test_krealloc_last_block();
 void test_krealloc_freed_pointer();
 void test_krealloc_next_block_not_free_kmalloc();
+void test_stress();
 
 
 
 int main(){
 
+    test_stress();
     test_krealloc_next_block_not_free_kmalloc();
     test_krealloc_freed_pointer();
     test_krealloc_last_block();
@@ -467,3 +471,40 @@ void test_krealloc_next_block_not_free_kmalloc(){
     CHECK_HEAP();
 }
 
+void test_stress(){
+
+    unsigned char memory[1024];
+    if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
+        return;
+    CHECK_HEAP();
+
+    unsigned char* pointers[32];
+    unsigned long current_len = 0;
+
+    for (int i = 0; i < NUM_OF_OPERATIONS; i++){
+        short operation_index = rand() % 2; 
+        if (current_len < 32 && operation_index == 0){ //kmalloc
+            unsigned long size = rand() % 1024;
+            unsigned char* new_memory = (unsigned char*)kmalloc(size);
+            CHECK_HEAP();
+            if (new_memory == NULL){
+                continue;
+            }
+
+            pointers[current_len++] = new_memory;
+
+        }
+        if (operation_index == 1){ //kfree
+            if (current_len == 0)
+                continue;
+            unsigned long pointer_index = rand() % current_len;
+            kfree(pointers[pointer_index]);
+            CHECK_HEAP();
+
+            for (unsigned long j = pointer_index; j < current_len - 1;j++){
+                pointers[j] = pointers[j + 1];
+            }
+            current_len--;
+        }
+    }
+}
