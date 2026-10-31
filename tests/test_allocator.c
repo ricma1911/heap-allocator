@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/param.h>
+
 
 #define CHECK_HEAP() assert(allocator_validate() == AL_DEBUG_OK)
 #define NUM_OF_OPERATIONS (200000)
@@ -473,7 +475,7 @@ void test_krealloc_next_block_not_free_kmalloc(){
 }
 
 void test_stress(){
-    for (unsigned int seed = 0; seed < 5; seed++){
+    for (unsigned int seed = 0; seed < 100; seed++){
         unsigned char memory[1024];
         if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
             return;
@@ -483,6 +485,8 @@ void test_stress(){
 
         unsigned long num_of_successful_operations = 0;
         unsigned char* pointers[32];
+        unsigned long sizes[32]; // for the size of each block user data
+        unsigned char datas[32][100]; //for the user data of each block
         unsigned long current_len = 0;
 
         for (int i = 0; i < NUM_OF_OPERATIONS; i++){
@@ -495,7 +499,10 @@ void test_stress(){
                     continue;
                 }
                 //printf("kmalloc size: %lu\n", size);
-                pointers[current_len++] = new_memory;
+                pointers[current_len] = new_memory;
+                sizes[current_len] = size;
+                copy_memory(datas[current_len], new_memory, size);
+                current_len++;
                 num_of_successful_operations++;
 
             }
@@ -508,6 +515,8 @@ void test_stress(){
 
                 for (unsigned long j = pointer_index; j < current_len - 1;j++){
                     pointers[j] = pointers[j + 1];
+                    copy_memory(datas[j], datas[j + 1], sizes[j+1]);
+                    sizes[j] = sizes[j + 1];
                 }
                 //printf("kfree ptr %lu\n", pointer_index);
                 num_of_successful_operations++;
@@ -523,12 +532,26 @@ void test_stress(){
 
                 unsigned char* new_memory = (unsigned char*)krealloc(pointers[pointer_index], size);
                 CHECK_HEAP();
-                if(new_memory == NULL)
+                if(new_memory == NULL){
+                    if(size == 0){//kfree done
+                        for (unsigned long j = pointer_index; j < current_len - 1;j++){
+                        pointers[j] = pointers[j + 1];
+                        copy_memory(datas[j], datas[j + 1], sizes[j+1]);
+                        sizes[j] = sizes[j + 1];
+                    }
+                        num_of_successful_operations++;
+                        current_len--;
+
+                    }
                     continue;
 
-                pointers[pointer_index] = new_memory;
-                num_of_successful_operations++;
+                }
+                assert(allocator_data_check(new_memory, datas[pointer_index], MIN(sizes[pointer_index], size)) == 1);
 
+                pointers[pointer_index] = new_memory;
+                sizes[pointer_index] = size;
+                copy_memory(datas[pointer_index], new_memory, size);
+                num_of_successful_operations++;
 
             }
         }
