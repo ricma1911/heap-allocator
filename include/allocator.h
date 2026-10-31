@@ -5,7 +5,8 @@
 
 typedef enum {
     ALLOCATOR_OK,
-    ALLOCATOR_INVALID_SIZE
+    ALLOCATOR_INVALID_SIZE,
+    ALLOCATOR_INVALID_ADRESS
 } allocator_status;
 
 allocator_status allocator_init(void* region, unsigned long size);

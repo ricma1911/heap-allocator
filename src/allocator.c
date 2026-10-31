@@ -21,6 +21,11 @@ static unsigned long region_size = 0;
 #endif
 
 allocator_status allocator_init(void* region, unsigned long size){
+    if ((unsigned long)region % _Alignof(block) != 0){
+        return ALLOCATOR_INVALID_ADRESS;
+    }
+    while (size % 8 != 0)
+        size--;
     if (size <= sizeof(block)){
         return ALLOCATOR_INVALID_SIZE;
     }

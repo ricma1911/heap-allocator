@@ -3,7 +3,10 @@ CFLAGS = -std=c17 -Wall -Wextra
 allocator.o: src/allocator.c
 	gcc $(CFLAGS) -ffreestanding -Iinclude -g -c src/allocator.c
 
-test: test_allocator.o allocator_test_mode.o
+test: test_allocator
+	./test_allocator
+
+test_allocator: test_allocator.o allocator_test_mode.o
 	gcc $(CFLAGS) test_allocator.o allocator_test_mode.o -o test_allocator
 
 test_allocator.o: tests/test_allocator.c
