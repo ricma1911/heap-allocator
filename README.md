@@ -2,7 +2,7 @@
 
 ## Project description
 
-A simple heap allocator implemented from scratch in C. It manages a memory region provided by caller and provides basic dynamic memory allocation and reallocation functionality.
+A simple heap allocator implemented from scratch in C and stress-tested with 20 million random operations. It manages a memory region provided by caller and provides basic dynamic memory allocation and reallocation functionality.
 
 ## Memory layout and debugging
 
@@ -21,7 +21,8 @@ This picture illustrates how in place reallocation happens with the cost of inte
 ![Krealloc internal fragmentation](./images/heap_krealloc_in_place.png)
 
 #### Krealloc calls kmalloc, because the next block is not free
-![Krealloc calls kmalloc](./images/heap_krealloc_in_place.png)
+This picture illustrates how the allocator behaves when the next block is not free and kmalloc is successful in the test_krealloc_next_block_not_free_kmalloc function.
+![Krealloc calls kmalloc](./images/heap_krealloc_calls_kmalloc.png)
 
 ## Features
 
