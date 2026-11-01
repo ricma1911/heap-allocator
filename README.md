@@ -2,7 +2,7 @@
 
 ## Project description
 
-A basic heap allocator implemented from scratch in C. It manages a memory region provided by caller.
+A simple heap allocator implemented from scratch in C. It manages a memory region provided by caller and provides basic dynamic memory allocation and reallocation functionality.
 
 ## Memory layout and debugging
 
@@ -19,9 +19,9 @@ This picture illustrates how coalescing works.
 This memory allocator has four main functions:
 
 - allocator_init - this is used to initialize the region
-- kmalloc - this is used to allocate a portion of memory and returns pointer to that memory, it uses first-fit strategy and 8-byte alignment
-- kfree - this is used to free already allocated memory, it uses basic coalescing free blocks are being merged, there is a basic pointer validation and some safety measures against double free (ignore)
-- krealloc - this is used to reallocate already allocated memory block, it is possible to increase or decrease its size
+- kmalloc - this is used to allocate a portion of memory and returns a pointer to that memory, it uses first-fit strategy and 8-byte alignment
+- kfree - this is used to free already allocated memory, it uses coalescing and neighboring free blocks are merged, there is a basic pointer validation and some safety measures against double free (ignore)
+- krealloc - reallocates an existing memory block. It supports both shrinking and expanding, attempting to resize blocks in place whenever possible. If in-place expansion is not possible, it allocates a new block and copies the existing data.
 
 ## Block structure
 
@@ -29,6 +29,17 @@ The block structure has 3 fields:
 - size - this is user-free space, the size of block metadata is not included
 - free - indicates whether the block is free (1) or allocated (0)
 - next - it is a pointer to the next block
+
+# Testing
+
+The allocator was tested using 16 cases written by me. Also, in allocator_debug.h there is a small API for testing. It includes these functions:
+
+- allocator_validate - the main function that checks allocator's invariants
+- allocator_data_check - checks whether two arrays have the same first size bytes (size is the argument of the function)
+- copy_memory - a basic function that copies a number of size bytes to a new array
+
+Those functions were used to determine, if allocator is working according to expectations. 
+Additionally, the allocator was tested using stress tests with 100 different seeds. Every seed has 200 000 random operations and all test runs passed successfully.
 
 ## Building and running
 
@@ -38,11 +49,17 @@ To build the project, run:
 make
 ```
 
-After that, run the executable:
-```bash
-./heap_allocator
-```
-## Limitations
+After that, there will be an object file named allocator.o.
 
-This allocator manages only given memory region and it is not a kernel memory manager. Kfree has O(n) time complexity due to linear traversal of the block list for validation and locating the previous block.
+To build the project in the testing mode run:
+```bash
+make test
+```
+All of the testing "settings" are in test_allocator.c
+## Known Limitations
+
+This allocator manages only given memory region and it is not a kernel memory manager. 
+Kfree and krealloc have O(n) time complexity due to linear traversal of the block list for validation and locating the previous block.
 It is not thread-safe and it only has 8-byte alignment.
+Each block requires 24 bytes of metadata on a typical 64-bit platform.
+The allocator has only been tested on Ubuntu 24.04(x86_64).

@@ -1,4 +1,4 @@
-CFLAGS = -std=c17 -Wall -Wextra
+CFLAGS = -std=c17 -Wall -Wextra -fsanitize=address,undefined 
 
 allocator.o: src/allocator.c
 	gcc $(CFLAGS) -ffreestanding -Iinclude -g -c src/allocator.c
