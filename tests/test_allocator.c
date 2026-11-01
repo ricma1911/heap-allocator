@@ -31,8 +31,8 @@ void test_stress();
 
 int main(){
 
-    test_stress();
     test_krealloc_next_block_not_free_kmalloc();
+    test_stress();
     test_krealloc_freed_pointer();
     test_krealloc_last_block();
     test_krealloc_invalid_pointer();
@@ -443,6 +443,8 @@ void test_krealloc_freed_pointer(){
 
 void test_krealloc_next_block_not_free_kmalloc(){
     unsigned char memory[1024];
+    for (size_t i = 0; i <sizeof(memory); i++)
+        memory[i] = (unsigned char)i;
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
         return;
     CHECK_HEAP();
