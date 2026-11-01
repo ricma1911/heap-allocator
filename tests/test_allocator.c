@@ -223,7 +223,7 @@ void test_basic_krealloc(){
     CHECK_HEAP();
 
 }
-
+//not enough space for the second block metadata (and in general)
 void test_krealloc_expansion_not_enough_space(){
     unsigned char memory[1024];
     if (allocator_init(memory, sizeof(memory)) == ALLOCATOR_INVALID_SIZE)
@@ -246,6 +246,24 @@ void test_krealloc_expansion_not_enough_space(){
     new_memory_1 = krealloc(new_memory_1, 45);
     CHECK_HEAP();
     assert(allocator_data_check(new_memory_1, expected, 8) == 1);
+
+    kfree(new_memory_1);
+    CHECK_HEAP();
+    kfree(new_memory_3);
+    CHECK_HEAP();
+
+    new_memory_1 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
+    new_memory_2 = (unsigned char*)kmalloc(8);
+    CHECK_HEAP();
+    new_memory_3 = (unsigned char*)kmalloc(16);
+    CHECK_HEAP();
+
+    kfree(new_memory_2);
+    CHECK_HEAP();
+
+    new_memory_1 = krealloc(new_memory_1, 29);
+    CHECK_HEAP();
 
     kfree(new_memory_1);
     CHECK_HEAP();
