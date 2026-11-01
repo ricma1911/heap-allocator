@@ -14,6 +14,15 @@ This picture illustrates the block structure.
 This picture illustrates how coalescing works.
 ![Coalescing Result](./images/heap_coalescing_result.png)
 
+### Screenshots for krealloc 
+
+#### Krealloc internal fragmentation in the test_krealloc_expansion_not_enough_space function
+This picture illustrates how in place reallocation happens with the cost of internal fragmentation
+![Krealloc internal fragmentation](./images/heap_krealloc_in_place.png)
+
+#### Krealloc calls kmalloc, because the next block is not free
+![Krealloc calls kmalloc](./images/heap_krealloc_in_place.png)
+
 ## Features
 
 This memory allocator has four main functions:
